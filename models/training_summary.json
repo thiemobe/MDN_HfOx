@@ -1,0 +1,196 @@
+{
+  "script": "train_all_sample_sizes.py",
+  "started_at": "2026-08-05T13:11:35.881061",
+  "csv_file": "csv_files/pilot_dual_design_results_sobol_and_linear.csv",
+  "sample_sizes": [
+    8,
+    12,
+    16,
+    20,
+    25,
+    32,
+    40,
+    50,
+    63,
+    80,
+    100,
+    125,
+    160,
+    200,
+    250,
+    316,
+    400,
+    500
+  ],
+  "n_runs_per_size": 5,
+  "weight_init_seed": 42,
+  "val_ratio": 0.2,
+  "early_stopping_patience": 200,
+  "early_stopping_min_delta": 0.0001,
+  "output_base_dir": "runs/all_sample_sizes_logarithmic_and_validated",
+  "training_results": {
+    "n8": {
+      "status": "completed",
+      "output_directory": "runs/all_sample_sizes_logarithmic_and_validated\\n8",
+      "n_models_trained": 5,
+      "n_train_per_model": 8,
+      "n_val_per_model": 1,
+      "val_ratio": 0.2,
+      "completed_at": "2026-08-05T13:11:46.511015"
+    },
+    "n12": {
+      "status": "completed",
+      "output_directory": "runs/all_sample_sizes_logarithmic_and_validated\\n12",
+      "n_models_trained": 5,
+      "n_train_per_model": 12,
+      "n_val_per_model": 2,
+      "val_ratio": 0.2,
+      "completed_at": "2026-08-05T13:12:03.263316"
+    },
+    "n16": {
+      "status": "completed",
+      "output_directory": "runs/all_sample_sizes_logarithmic_and_validated\\n16",
+      "n_models_trained": 5,
+      "n_train_per_model": 16,
+      "n_val_per_model": 3,
+      "val_ratio": 0.2,
+      "completed_at": "2026-08-05T13:12:23.099733"
+    },
+    "n20": {
+      "status": "completed",
+      "output_directory": "runs/all_sample_sizes_logarithmic_and_validated\\n20",
+      "n_models_trained": 5,
+      "n_train_per_model": 20,
+      "n_val_per_model": 4,
+      "val_ratio": 0.2,
+      "completed_at": "2026-08-05T13:12:43.525748"
+    },
+    "n25": {
+      "status": "completed",
+      "output_directory": "runs/all_sample_sizes_logarithmic_and_validated\\n25",
+      "n_models_trained": 5,
+      "n_train_per_model": 25,
+      "n_val_per_model": 5,
+      "val_ratio": 0.2,
+      "completed_at": "2026-08-05T13:13:08.593743"
+    },
+    "n32": {
+      "status": "completed",
+      "output_directory": "runs/all_sample_sizes_logarithmic_and_validated\\n32",
+      "n_models_trained": 5,
+      "n_train_per_model": 32,
+      "n_val_per_model": 6,
+      "val_ratio": 0.2,
+      "completed_at": "2026-08-05T13:13:26.527343"
+    },
+    "n40": {
+      "status": "completed",
+      "output_directory": "runs/all_sample_sizes_logarithmic_and_validated\\n40",
+      "n_models_trained": 5,
+      "n_train_per_model": 40,
+      "n_val_per_model": 8,
+      "val_ratio": 0.2,
+      "completed_at": "2026-08-05T13:14:18.033705"
+    },
+    "n50": {
+      "status": "completed",
+      "output_directory": "runs/all_sample_sizes_logarithmic_and_validated\\n50",
+      "n_models_trained": 5,
+      "n_train_per_model": 50,
+      "n_val_per_model": 10,
+      "val_ratio": 0.2,
+      "completed_at": "2026-08-05T13:15:06.960973"
+    },
+    "n63": {
+      "status": "completed",
+      "output_directory": "runs/all_sample_sizes_logarithmic_and_validated\\n63",
+      "n_models_trained": 5,
+      "n_train_per_model": 63,
+      "n_val_per_model": 12,
+      "val_ratio": 0.2,
+      "completed_at": "2026-08-05T13:16:02.389002"
+    },
+    "n80": {
+      "status": "completed",
+      "output_directory": "runs/all_sample_sizes_logarithmic_and_validated\\n80",
+      "n_models_trained": 5,
+      "n_train_per_model": 80,
+      "n_val_per_model": 16,
+      "val_ratio": 0.2,
+      "completed_at": "2026-08-05T13:17:17.526469"
+    },
+    "n100": {
+      "status": "completed",
+      "output_directory": "runs/all_sample_sizes_logarithmic_and_validated\\n100",
+      "n_models_trained": 5,
+      "n_train_per_model": 100,
+      "n_val_per_model": 20,
+      "val_ratio": 0.2,
+      "completed_at": "2026-08-05T13:18:27.372789"
+    },
+    "n125": {
+      "status": "completed",
+      "output_directory": "runs/all_sample_sizes_logarithmic_and_validated\\n125",
+      "n_models_trained": 5,
+      "n_train_per_model": 125,
+      "n_val_per_model": 25,
+      "val_ratio": 0.2,
+      "completed_at": "2026-08-05T13:19:19.167132"
+    },
+    "n160": {
+      "status": "completed",
+      "output_directory": "runs/all_sample_sizes_logarithmic_and_validated\\n160",
+      "n_models_trained": 5,
+      "n_train_per_model": 160,
+      "n_val_per_model": 32,
+      "val_ratio": 0.2,
+      "completed_at": "2026-08-05T13:20:07.437185"
+    },
+    "n200": {
+      "status": "completed",
+      "output_directory": "runs/all_sample_sizes_logarithmic_and_validated\\n200",
+      "n_models_trained": 5,
+      "n_train_per_model": 200,
+      "n_val_per_model": 40,
+      "val_ratio": 0.2,
+      "completed_at": "2026-08-05T13:21:19.155585"
+    },
+    "n250": {
+      "status": "completed",
+      "output_directory": "runs/all_sample_sizes_logarithmic_and_validated\\n250",
+      "n_models_trained": 5,
+      "n_train_per_model": 250,
+      "n_val_per_model": 50,
+      "val_ratio": 0.2,
+      "completed_at": "2026-08-05T13:22:50.008828"
+    },
+    "n316": {
+      "status": "completed",
+      "output_directory": "runs/all_sample_sizes_logarithmic_and_validated\\n316",
+      "n_models_trained": 5,
+      "n_train_per_model": 316,
+      "n_val_per_model": 63,
+      "val_ratio": 0.2,
+      "completed_at": "2026-08-05T13:24:23.745348"
+    },
+    "n400": {
+      "status": "completed",
+      "output_directory": "runs/all_sample_sizes_logarithmic_and_validated\\n400",
+      "n_models_trained": 5,
+      "n_train_per_model": 400,
+      "n_val_per_model": 80,
+      "val_ratio": 0.2,
+      "completed_at": "2026-08-05T13:26:21.428559"
+    },
+    "n500": {
+      "status": "completed",
+      "output_directory": "runs/all_sample_sizes_logarithmic_and_validated\\n500",
+      "n_models_trained": 5,
+      "n_train_per_model": 500,
+      "n_val_per_model": 100,
+      "val_ratio": 0.2,
+      "completed_at": "2026-08-05T13:29:02.600809"
+    }
+  },
+  "completed_at": "2026-08-05T13:29:02.600930"
+}
