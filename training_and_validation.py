@@ -4,6 +4,7 @@ import torch
 import pandas as pd
 import argparse
 import json
+import glob
 import os
 import joblib
 
@@ -14,10 +15,19 @@ from MDN_loss import mdn_loss
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.preprocessing import StandardScaler
 
-DATA_FILE = 'data/train_val_samples_removed_outliers.csv'
-N_SAMPLES = 500                 # training samples per model
-N_RUNS = 5                      # number of models trained with different shuffles
-OUTPUT_DIR = f'models/n{N_SAMPLES}'               # None -> auto: runs/multi_shuffle_logarithmic_<n_samples>samples
+# Usage examples:
+# python training_and_validation.py --n-samples 50 --n-runs 1
+# python training_and_validation.py --n-samples 500 --n-runs 5
+# 
+# Batch training for multiple sample sizes (PowerShell):
+# $sample_sizes = @(8, 12, 16, 20, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 316, 400, 500)
+# foreach ($n in $sample_sizes) { python training_and_validation.py --n-samples $n }
+
+DATA_FILE = 'data/train_val_samples.csv'
+DEFAULT_DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'removed_outliers')
+N_SAMPLES = 125                # training samples per model
+N_RUNS = 1                      # number of models trained with different shuffles
+OUTPUT_DIR = f'models/d2d_original_data/n{N_SAMPLES}'               # None -> auto: runs/multi_shuffle_logarithmic_<n_samples>samples
 VAL_RATIO = 0.2                 # validation size as fraction of n_samples
 EARLY_STOPPING_PATIENCE = 200   # epochs without improvement before stopping
 EARLY_STOPPING_MIN_DELTA = 1e-4
@@ -42,6 +52,13 @@ MODEL_CONFIG = {
 #   500 samples, run 0 → seed 500000
 #   500 samples, run 1 → seed 500001
 
+def iter_csv_files(data_dir):
+    if not os.path.isdir(data_dir):
+        raise FileNotFoundError(f"CSV directory not found: {data_dir}")
+    csv_files = sorted(glob.glob(os.path.join(data_dir, '*.csv')))
+    if not csv_files:
+        raise FileNotFoundError(f"No CSV files found in: {data_dir}")
+    return csv_files
 
 def train_mdn_with_early_stopping(model, train_loader, val_loader,
                                    epochs=MODEL_CONFIG['epochs'], lr=MODEL_CONFIG['lr'],
@@ -455,6 +472,17 @@ if __name__ == "__main__":
         help=f'Path to CSV data file (default: {DATA_FILE})'
     )
     parser.add_argument(
+        '--data-dir',
+        type=str,
+        default=DEFAULT_DATA_DIR,
+        help=f'Directory containing CSV files to process (default: {DEFAULT_DATA_DIR})'
+    )
+    parser.add_argument(
+        '--all-data-files',
+        action='store_true',
+        help='Process every .csv file in --data-dir instead of a single --data-file'
+    )
+    parser.add_argument(
         '--n-samples',
         type=int,
         default=N_SAMPLES,
@@ -508,23 +536,46 @@ if __name__ == "__main__":
     print("\n" + "=" * 80)
     print("MULTI-SHUFFLE MDN TRAINING")
     print("=" * 80)
-    print(f"Data file: {args.data_file}")
-    print(f"Training samples per model: {args.n_samples}")
-    print(f"Validation ratio: {args.val_ratio*100:.0f}% of training samples")
-    print(f"Number of models: {args.n_runs}")
-    print(f"Weight init seed (all models): {args.weight_init_seed}")
-    print(f"Shuffle formula: shuffle_seed = n_samples * 1000 + run_index")
-    print("=" * 80 + "\n")
+
+    if args.all_data_files:
+        csv_files = iter_csv_files(args.data_dir)
+        print(f"Processing all CSV files in: {args.data_dir}")
+        print(f"Found {len(csv_files)} CSV files")
+        for csv_file in csv_files:
+            dataset_name = os.path.splitext(os.path.basename(csv_file))[0]
+            dataset_output_dir = os.path.join(args.output_dir, dataset_name)
+            print(f"\nDataset: {csv_file}")
+            print(f"Output dir: {dataset_output_dir}")
+            train_multi_shuffle(
+                MODEL_CONFIG,
+                csv_file=csv_file,
+                n_samples=args.n_samples,
+                n_runs=args.n_runs,
+                output_dir=dataset_output_dir,
+                weight_init_seed=args.weight_init_seed,
+                train_val_split_ratio=args.val_ratio,
+                early_stopping_patience=args.early_stopping_patience,
+                early_stopping_min_delta=args.early_stopping_min_delta
+            )
+    else:
+        print(f"Data file: {args.data_file}")
+        print(f"Training samples per model: {args.n_samples}")
+        print(f"Validation ratio: {args.val_ratio*100:.0f}% of training samples")
+        print(f"Number of models: {args.n_runs}")
+        print(f"Weight init seed (all models): {args.weight_init_seed}")
+        print(f"Shuffle formula: shuffle_seed = n_samples * 1000 + run_index")
+        print("=" * 80 + "\n")
+
     
-    # Train ensemble
-    scaler_X, scaler_y = train_multi_shuffle(
-        MODEL_CONFIG,
-        csv_file=args.data_file,
-        n_samples=args.n_samples,
-        n_runs=args.n_runs,
-        output_dir=args.output_dir,
-        weight_init_seed=args.weight_init_seed,
-        train_val_split_ratio=args.val_ratio,
-        early_stopping_patience=args.early_stopping_patience,
-        early_stopping_min_delta=args.early_stopping_min_delta
-    )
+        # Train the single requested data file.
+        train_multi_shuffle(
+            MODEL_CONFIG,
+            csv_file=args.data_file,
+            n_samples=args.n_samples,
+            n_runs=args.n_runs,
+            output_dir=args.output_dir,
+            weight_init_seed=args.weight_init_seed,
+            train_val_split_ratio=args.val_ratio,
+            early_stopping_patience=args.early_stopping_patience,
+            early_stopping_min_delta=args.early_stopping_min_delta
+        )

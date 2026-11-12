@@ -2,6 +2,7 @@
 Plot OVERALL CRPS and R^2 metrics for the random testset.
 """
 
+import os
 import re
 
 import numpy as np
@@ -11,12 +12,53 @@ import pandas as pd
 # =========================
 # Configuration
 # =========================
-CRPS_RANDOM_PATH = 'results/CRPS/crps_summary_by_file.csv'
-R2_RANDOM_PATH = 'results/R2/r_squared_summary_all_models.csv'
-OUTPUT_PNG = 'figures/CRPS_and_R2/crps_and_r2.png'
-OUTPUT_SVG = 'figures/CRPS_and_R2/crps_and_r2.svg'
+CRPS_RANDOM_PATH = 'results/CRPS/crps_summary_by_file_with_outliers.csv'
+R2_RANDOM_PATH = 'results/R2/r_squared_summary_all_models_with_outliers.csv'
+OUTPUT_PNG = 'figures/CRPS_and_R2/crps_and_r2_with_outliers.png'
+OUTPUT_SVG = 'figures/CRPS_and_R2/crps_and_r2_with_outliers.svg'
+# New split: train/val on rows 0-599 of original_data.csv, test on rows 600-1199 (retrained K=2 MDN 'mdn2' from baseline_comparison.py)
+USE_NEW_SPLIT = True
+if USE_NEW_SPLIT:
+    OUTPUT_PNG = 'figures/CRPS_and_R2/crps_and_r2_new_split.png'
+    OUTPUT_SVG = 'figures/CRPS_and_R2/crps_and_r2_new_split.svg'
 FIGURE_SIZE = (6, 3)
 CONDUCTANCE_RANGE_US = 140.0
+
+plt.rcParams.update({
+    "font.family": "times new roman",
+    "font.size": 14,
+    "axes.labelsize": 14,
+    "axes.titlesize": 14,
+    "xtick.labelsize": 14,
+    "ytick.labelsize": 14,
+    "legend.fontsize": 14,
+})
+
+
+def load_new_split_data(kind='mdn2'):
+    """(n, mean, std over runs) tuples for CRPS and R^2 (overall, SET, RESET) from the cached baseline_comparison predictions."""
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    import baseline_comparison as bc
+
+    _, y_all, masks = bc.load_test_data()
+    y = {s: y_all[masks[s]] for s in bc.STATES}
+    y_pooled = np.concatenate([y['set'], y['reset']])
+    out = {k: [] for k in ('crps', 'crps_set', 'crps_reset', 'r2', 'r2_set', 'r2_reset')}
+    for n in bc.discover_n_values():
+        crps = {s: bc.per_sample_crps(kind, n, s, y[s]) for s in bc.STATES}
+        means = {s: bc.per_sample_mean(kind, n, s) for s in bc.STATES}
+        runs = {
+            'crps': np.concatenate([crps['set'], crps['reset']], axis=1).mean(1),
+            'crps_set': crps['set'].mean(1),
+            'crps_reset': crps['reset'].mean(1),
+            'r2': np.array([bc.r_squared(y_pooled, p) for p in np.concatenate([means['set'], means['reset']], axis=1)]),
+            'r2_set': np.array([bc.r_squared(y['set'], p) for p in means['set']]),
+            'r2_reset': np.array([bc.r_squared(y['reset'], p) for p in means['reset']]),
+        }
+        for k, v in runs.items():
+            out[k].append((n, float(v.mean()), float(v.std(ddof=1))))
+    return tuple(out[k] for k in ('crps', 'crps_set', 'crps_reset', 'r2', 'r2_set', 'r2_reset'))
 
 def plot_overall_random_testset_square():
     """
@@ -27,22 +69,21 @@ def plot_overall_random_testset_square():
     """
     
     print("\nLoading random testset OVERALL data (square layout)...")
-    
-    # Load CRPS data
-    try:
-        df_crps_random = pd.read_csv(CRPS_RANDOM_PATH, encoding='utf-8-sig')
-        print(f"[OK] Loaded random testset CRPS: {len(df_crps_random)} models")
-    except FileNotFoundError:
-        print(f"ERROR: {CRPS_RANDOM_PATH} not found!")
-        return
-    
-    # Load R² data
-    try:
-        r2_df_random = pd.read_csv(R2_RANDOM_PATH)
-        print(f"[OK] Loaded random testset R²: {len(r2_df_random)} models")
-    except FileNotFoundError:
-        print(f"ERROR: {R2_RANDOM_PATH} not found!")
-        return
+
+    df_crps_random = r2_df_random = None
+    if not USE_NEW_SPLIT:
+        try:
+            df_crps_random = pd.read_csv(CRPS_RANDOM_PATH, encoding='utf-8-sig')
+            print(f"[OK] Loaded random testset CRPS: {len(df_crps_random)} models")
+        except FileNotFoundError:
+            print(f"ERROR: {CRPS_RANDOM_PATH} not found!")
+            return
+        try:
+            r2_df_random = pd.read_csv(R2_RANDOM_PATH)
+            print(f"[OK] Loaded random testset R²: {len(r2_df_random)} models")
+        except FileNotFoundError:
+            print(f"ERROR: {R2_RANDOM_PATH} not found!")
+            return
     
     # Extract OVERALL/SET/RESET CRPS from random testset
     def extract_overall_crps(df):
@@ -155,8 +196,11 @@ def plot_overall_random_testset_square():
         return overall_data, set_data, reset_data
     
     # Extract data
-    crps_random_data, crps_set_data, crps_reset_data = extract_overall_crps(df_crps_random)
-    r2_random_data, r2_set_data, r2_reset_data = extract_overall_r2(r2_df_random)
+    if USE_NEW_SPLIT:
+        crps_random_data, crps_set_data, crps_reset_data, r2_random_data, r2_set_data, r2_reset_data = load_new_split_data()
+    else:
+        crps_random_data, crps_set_data, crps_reset_data = extract_overall_crps(df_crps_random)
+        r2_random_data, r2_set_data, r2_reset_data = extract_overall_r2(r2_df_random)
     
     # Sort by sample count
     crps_random_data.sort(key=lambda x: x[0])
@@ -216,11 +260,11 @@ def plot_overall_random_testset_square():
                 color="#D34154", label='Reset', zorder=9,
                 markerfacecolor='white', markeredgecolor='#D34154', markeredgewidth=0.8, alpha=0.85)
     
-    ax.set_xlabel('Training Samples', fontsize=11, fontweight='bold', labelpad=10)
-    ax.set_ylabel('CRPS [µS]', fontsize=11, fontweight='bold', labelpad=10)
+    ax.set_xlabel('Training Samples', labelpad=0)
+    ax.set_ylabel('CRPS [µS]', labelpad=0)
     #ax.set_title('OVERALL CRPS - Random Testset', fontsize=12, fontweight='bold', pad=8)
-    ax.legend(fontsize=10, loc='best', framealpha=0.95)
-    ax.grid(True, alpha=0.2, linestyle='-')
+    ax.legend(loc='best', framealpha=0.95)
+    #ax.grid(False, alpha=0.2, linestyle='-')
     ax.set_ylim(bottom=0)
     ax.set_yticks([0, 15, 30])
 
@@ -230,8 +274,8 @@ def plot_overall_random_testset_square():
     ax_rel.set_ylim((y_min / CONDUCTANCE_RANGE_US) * 100.0,
                     (y_max / CONDUCTANCE_RANGE_US) * 100.0)
     ax_rel.set_yticks([0, 10, 20])
-    ax_rel.set_ylabel('Relative error (%)', fontsize=11, fontweight='bold', labelpad=10)
-
+    ax_rel.set_ylabel('Relative error [%]', labelpad=0)
+    
     if len(n_crps_random) > 0:
         ax.set_xscale('log')
     ax.set_box_aspect(1)
@@ -261,11 +305,11 @@ def plot_overall_random_testset_square():
     
     ax.axhline(y=0, color='black', linestyle=':', linewidth=1, alpha=0.5, zorder=1)
     
-    ax.set_xlabel('Training Samples', fontsize=11, fontweight='bold', labelpad=10)
-    ax.set_ylabel('R²', fontsize=11, fontweight='bold', labelpad=10)
+    ax.set_xlabel('Training Samples', labelpad=0)
+    ax.set_ylabel('R²', labelpad=0)
     #ax.set_title('OVERALL R² - Random Testset', fontsize=12, fontweight='bold', pad=8)
-    ax.legend(fontsize=10, loc='best', framealpha=0.95)
-    ax.grid(True, alpha=0.2, linestyle='-')
+    ax.legend(loc='best', framealpha=0.95)
+    #ax.grid(False, alpha=0.2, linestyle='-')
     ax.set_ylim(bottom=y_min_r2, top=y_max_r2)
     ax.set_yticks([0, 0.5, 1.0])
     if len(n_r2_random) > 0:

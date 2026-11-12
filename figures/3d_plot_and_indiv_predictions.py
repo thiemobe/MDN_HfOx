@@ -23,11 +23,11 @@ from scipy.stats import norm
 # =========================
 # Configuration
 # =========================
-VALIDATION_CSV = 'results/validation_examples_model_run1_500samples.csv'
+VALIDATION_CSV = 'results/validation_examples_new_split_model_run5_500samples.csv'
 GT_CSV = 'data/sweep_10_cycles.csv'
 
-VALIDATION_OUTPUT_DIR = 'figures/3d_and_observation_vs_prediction'
-VALIDATION_INDIVIDUAL_OUTPUT_DIR = 'figures/3d_and_observation_vs_prediction'
+VALIDATION_OUTPUT_DIR = 'figures/3d_and_observation_vs_prediction_new_split'
+VALIDATION_INDIVIDUAL_OUTPUT_DIR = 'figures/3d_and_observation_vs_prediction_new_split'
 
 Y_MIN, Y_MAX, N_POINTS = -25.0, 150.0, 400
 
@@ -306,14 +306,15 @@ def main():
     parser.add_argument('--gt-csv', default=GT_CSV, help='Ground-truth CSV path used with --pdf-gt')
     parser.add_argument('--pdf-gt-bin-width-us', type=float, default=PDF_GT_BIN_WIDTH_US, help='Conductance bin width [uS] for GT PDF bars')
     parser.add_argument('--pdf-gt-z-scale', type=float, default=PDF_GT_HEIGHT_SCALE, help='Scale factor converting GT PDF density to bar height')
+    parser.add_argument('--output-dir', default=VALIDATION_OUTPUT_DIR, help='Directory for the plots')
     args = parser.parse_args()
 
     if args.validation_examples:
-        plot_validation_examples(csv_file=args.validation_csv, output_dir=VALIDATION_OUTPUT_DIR)
+        plot_validation_examples(csv_file=args.validation_csv, output_dir=args.output_dir)
     elif args.validation_individual:
         plot_validation_examples_as_individual_pdfs(
             csv_file=args.validation_csv,
-            output_dir=VALIDATION_INDIVIDUAL_OUTPUT_DIR,
+            output_dir=args.output_dir,
             pdf_gt=args.pdf_gt,
             gt_csv_path=args.gt_csv,
             pdf_gt_bin_width_uS=args.pdf_gt_bin_width_us,

@@ -27,8 +27,8 @@ import pandas as pd
 # Configuration
 # =========================
 DEFAULT_DATA_DIR = 'predictions'
-CSV_OUTPUT_FILENAME = 'results/R2/r_squared_summary_all_models.csv'
-JSON_OUTPUT_FILENAME = 'results/R2/r_squared_summary_all_models.json'
+CSV_OUTPUT_FILENAME = 'results/R2/r_squared_summary_all_models_with_outliers.csv'
+JSON_OUTPUT_FILENAME = 'results/R2/r_squared_summary_all_models_with_outliers.json'
 N_COMPONENTS_PER_MEMBER = 2
 
 
@@ -211,7 +211,7 @@ def find_prediction_files(data_dir=DEFAULT_DATA_DIR):
     if not os.path.isdir(data_dir):
         return models
 
-    random_re = re.compile(r'^mdn_predictions_final_models_random_dataset_predictions_shuffled_n(\d+)_(set|reset)\.csv$', re.IGNORECASE)
+    random_re = re.compile(r'^mdn_predictions_final_models_random_dataset_predictions(?:_with_outliers)?_shuffled_n(\d+)_(set|reset)\.csv$', re.IGNORECASE)
     iterative_re = re.compile(
         r'^mdn_predictions_iterative_(first|second)_(set|reset)(?:_detailed)?\.csv$',
         re.IGNORECASE
