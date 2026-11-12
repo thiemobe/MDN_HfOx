@@ -1,11 +1,5 @@
 This repository contains the relevant data, scripts, and figures for the APL Machine Learning publication "Mixture density networks as a probabilistic surrogate for cycle-to-cycle variability in filamentary HfOx-memristive devices".
 
-### Key Modifications in V2:
-- Removed all outlier-based analysis and models
-- Regenerated seed_variation plots (upper subplot only, coefficient of variation removed)
-- Updated all figure generation scripts to use the new split structure
-- Included all necessary visualization scripts from the preparation pipeline
-
 ## Main Scripts
 
 1. **training_and_validation.py** – Training and validation script. Specify the number of training samples to train the MDNs.
